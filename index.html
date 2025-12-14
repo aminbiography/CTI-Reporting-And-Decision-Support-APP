@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reporting & Decision-Support APP</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#121a33;--muted:#93a4c7;--text:#e9efff;--accent:#6aa6ff;--good:#38d39f;--warn:#ffcc66;--bad:#ff6b6b;--border:rgba(255,255,255,.10)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:radial-gradient(1200px 700px at 20% -10%, rgba(106,166,255,.25), transparent 50%),radial-gradient(1000px 600px at 90% 10%, rgba(56,211,159,.18), transparent 55%),var(--bg);color:var(--text)}
+    header{padding:24px 18px 10px;max-width:1280px;margin:0 auto}
+    header h1{font-size:20px;margin:0 0 6px;letter-spacing:.2px}
+    header p{margin:0;color:var(--muted);font-size:13px;line-height:1.4}
+
+    main{max-width:1280px;margin:0 auto;padding:14px 18px 34px;display:grid;gap:14px}
+
+    .tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .tab{border:1px solid var(--border);background:rgba(18,26,51,.55);color:var(--text);padding:10px 12px;border-radius:12px;font-size:13px;cursor:pointer;user-select:none}
+    .tab[aria-selected="true"]{border-color:rgba(106,166,255,.55);box-shadow:0 0 0 3px rgba(106,166,255,.10) inset}
+
+    .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
+    @media (max-width: 1020px){.grid{grid-template-columns:1fr}}
+
+    .card{background:rgba(18,26,51,.65);border:1px solid var(--border);border-radius:16px;padding:14px}
+    .card h2{margin:0 0 10px;font-size:14px}
+
+    label{display:block;margin:10px 0 6px;color:var(--muted);font-size:12px}
+    input, select, textarea{width:100%;background:rgba(11,16,32,.7);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:10px 11px;font-size:13px;outline:none}
+    textarea{min-height:200px;resize:vertical;line-height:1.35}
+    input:focus, select:focus, textarea:focus{border-color:rgba(106,166,255,.55);box-shadow:0 0 0 3px rgba(106,166,255,.12)}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 560px){.row{grid-template-columns:1fr}}
+
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    button{border:1px solid var(--border);background:rgba(11,16,32,.55);color:var(--text);padding:10px 12px;border-radius:12px;font-size:13px;cursor:pointer}
+    button.primary{border-color:rgba(106,166,255,.55);background:rgba(106,166,255,.12)}
+    button.danger{border-color:rgba(255,107,107,.6);background:rgba(255,107,107,.10)}
+
+    .hint{color:var(--muted);font-size:12px;line-height:1.45;margin:8px 0 0}
+    .status{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);padding:6px 8px;border-radius:999px;font-size:12px;color:var(--muted)}
+    .pill b{color:var(--text);font-weight:600}
+
+    .kpis{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .kpi{border:1px solid var(--border);border-radius:14px;padding:10px 12px;min-width:165px;background:rgba(11,16,32,.35)}
+    .kpi .v{font-size:18px;margin:0}
+    .kpi .k{margin:0;color:var(--muted);font-size:12px}
+
+    .list{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+    .item{border:1px solid var(--border);border-radius:14px;padding:10px 10px 10px 12px;background:rgba(11,16,32,.35)}
+    .item .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+
+    .badge{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--border);white-space:nowrap}
+    .badge.good{border-color:rgba(56,211,159,.6);color:var(--good)}
+    .badge.warn{border-color:rgba(255,204,102,.7);color:var(--warn)}
+    .badge.bad{border-color:rgba(255,107,107,.7);color:var(--bad)}
+
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,monospace}
+    .small{font-size:12px;color:var(--muted)}
+    .hidden{display:none!important}
+
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th, td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left;font-size:12px;vertical-align:top}
+    th{color:var(--muted);font-weight:600}
+
+    .bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid var(--border)}
+    .bar > div{height:100%;background:rgba(106,166,255,.65)}
+
+    footer{max-width:1280px;margin:0 auto;padding:0 18px 28px;color:var(--muted);font-size:12px;line-height:1.45}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Reporting and Decision-Support APP</h1>
+    <p>
+      All calculations run locally in the browser.
+    </p>
+  </header>
+
+  <main>
+    <div class="tabs" role="tablist" aria-label="Tools">
+      <button class="tab" role="tab" id="tab-risk" aria-controls="panel-risk" aria-selected="true">Risk Scoring Calculator</button>
+      <button class="tab" role="tab" id="tab-vuln" aria-controls="panel-vuln" aria-selected="false">Vulnerability Prioritization</button>
+      <button class="tab" role="tab" id="tab-maturity" aria-controls="panel-maturity" aria-selected="false">Security Maturity Tracker</button>
+      <button class="tab" role="tab" id="tab-report" aria-controls="panel-report" aria-selected="false">Executive Summary Generator</button>
+    </div>
+
+    <!-- RISK -->
+    <section class="grid" role="tabpanel" id="panel-risk" aria-labelledby="tab-risk">
+      <div class="card">
+        <h2>Risk Scoring Calculator</h2>
+        <p class="hint" style="margin-top:0">
+          A transparent scoring model: <span class="mono">Risk = Likelihood × Impact</span>, scaled to 0–100, with optional modifiers.
+          Use to standardize decisions across findings.
+        </p>
+
+        <div class="row">
+          <div>
+            <label for="r-asset">Asset criticality</label>
+            <select id="r-asset">
+              <option value="1">Low (dev/test)</option>
+              <option value="2" selected>Medium (internal)</option>
+              <option value="3">High (customer-facing)</option>
+              <option value="4">Very high (core revenue / regulated)</option>
+            </select>
+          </div>
+          <div>
+            <label for="r-exposure">Exposure</label>
+            <select id="r-exposure">
+              <option value="1">Local-only / segmented</option>
+              <option value="2" selected>Internal network</option>
+              <option value="3">Internet-facing</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="r-likelihood">Likelihood (1–5)</label>
+            <input id="r-likelihood" type="number" min="1" max="5" value="3" />
+          </div>
+          <div>
+            <label for="r-impact">Impact (1–5)</label>
+            <input id="r-impact" type="number" min="1" max="5" value="3" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="r-exploit">Exploit availability</label>
+            <select id="r-exploit">
+              <option value="0">Unknown</option>
+              <option value="1" selected>None / unlikely</option>
+              <option value="2">Proof-of-concept exists</option>
+              <option value="3">Weaponized / widely used</option>
+            </select>
+          </div>
+          <div>
+            <label for="r-detect">Detectability</label>
+            <select id="r-detect">
+              <option value="1">Easy to detect</option>
+              <option value="2" selected>Moderate</option>
+              <option value="3">Hard to detect</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="r-notes">Notes (optional)</label>
+        <textarea id="r-notes" class="mono" placeholder="Short rationale for likelihood/impact and assumptions."></textarea>
+
+        <div class="actions">
+          <button class="primary" id="r-calc">Calculate</button>
+          <button id="r-demo">Load demo</button>
+          <button class="danger" id="r-clear">Clear</button>
+        </div>
+
+        <p class="hint">Recommendation guidance is generated from score and modifiers; you can adjust thresholds to match your organization.</p>
+      </div>
+
+      <div class="card">
+        <h2>Decision Output</h2>
+        <div class="status">
+          <span class="pill"><b>Last run</b> <span id="r-last">—</span></span>
+          <span class="pill"><b>Model</b> <span class="mono">L×I + modifiers</span></span>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><p class="v" id="r-score">0</p><p class="k">Risk score (0–100)</p></div>
+          <div class="kpi"><p class="v" id="r-sev">—</p><p class="k">Severity</p></div>
+          <div class="kpi"><p class="v" id="r-sla">—</p><p class="k">Suggested SLA</p></div>
+        </div>
+
+        <div style="margin-top:10px">
+          <div class="small" style="margin-bottom:6px">Score bar</div>
+          <div class="bar"><div id="r-bar" style="width:0%"></div></div>
+        </div>
+
+        <div class="item" style="margin-top:12px">
+          <div class="top">
+            <div>
+              <div><span class="mono">Recommendation</span></div>
+              <div class="small" id="r-rec" style="margin-top:6px">—</div>
+              <div class="small" id="r-why" style="margin-top:8px"></div>
+            </div>
+            <span class="badge" id="r-badge">—</span>
+          </div>
+        </div>
+
+        <div class="item" style="margin-top:10px">
+          <div class="small"><b>Copy/paste summary</b></div>
+          <textarea id="r-summary" class="mono" style="min-height:130px" readonly></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- VULN -->
+    <section class="grid hidden" role="tabpanel" id="panel-vuln" aria-labelledby="tab-vuln">
+      <div class="card">
+        <h2>Vulnerability Prioritization</h2>
+        <p class="hint" style="margin-top:0">
+          Paste a CSV-like list of findings. The tool scores each finding using CVSS (if provided) plus context (asset criticality, exposure, exploit maturity) and produces a prioritized list and remediation plan.
+        </p>
+
+        <label for="v-input">Findings (CSV-like)</label>
+        <textarea id="v-input" class="mono" placeholder="Columns: id,title,asset,exposure,cvss,exploit,age_days,owner\n\nExample:\nCVE-2024-XXXX,OpenSSL vuln,Payments API,internet,9.8,weaponized,3,Platform\nINT-12,Missing HSTS,Marketing site,internet,4.3,poc,60,WebTeam\nAPP-77,Outdated library,Internal portal,internal,7.5,poc,30,AppTeam"></textarea>
+
+        <div class="row">
+          <div>
+            <label for="v-default-owner">Default owner label</label>
+            <input id="v-default-owner" value="Unassigned" />
+          </div>
+          <div>
+            <label for="v-topn">Show top N</label>
+            <input id="v-topn" type="number" min="5" value="25" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="v-w-cvss">Weight: CVSS</label>
+            <input id="v-w-cvss" type="number" min="0" max="1" step="0.05" value="0.55" />
+          </div>
+          <div>
+            <label for="v-w-context">Weight: Context</label>
+            <input id="v-w-context" type="number" min="0" max="1" step="0.05" value="0.45" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="v-run">Prioritize</button>
+          <button id="v-demo">Load demo</button>
+          <button id="v-export">Export CSV</button>
+          <button class="danger" id="v-clear">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Prioritized View</h2>
+        <div class="status">
+          <span class="pill"><b>Last run</b> <span id="v-last">—</span></span>
+          <span class="pill"><b>Findings</b> <span id="v-count">0</span></span>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><p class="v" id="v-kpi-critical">0</p><p class="k">Critical</p></div>
+          <div class="kpi"><p class="v" id="v-kpi-high">0</p><p class="k">High</p></div>
+          <div class="kpi"><p class="v" id="v-kpi-backlog">0</p><p class="k">Backlog</p></div>
+        </div>
+
+        <div style="overflow:auto; max-height: 560px; border:1px solid var(--border); border-radius:14px; margin-top:10px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>ID</th>
+                <th>Severity</th>
+                <th>Score</th>
+                <th>Asset</th>
+                <th>Exposure</th>
+                <th>CVSS</th>
+                <th>Exploit</th>
+                <th>Age</th>
+                <th>Owner</th>
+                <th>Plan</th>
+              </tr>
+            </thead>
+            <tbody id="v-body"></tbody>
+          </table>
+        </div>
+        <div id="v-err" class="small"></div>
+      </div>
+    </section>
+
+    <!-- MATURITY -->
+    <section class="grid hidden" role="tabpanel" id="panel-maturity" aria-labelledby="tab-maturity">
+      <div class="card">
+        <h2>Security Maturity Tracker</h2>
+        <p class="hint" style="margin-top:0">
+          Track control maturity across domains (policy, identity, endpoint, logging, vulnerability management, incident response). Score each control 0–4 and produce a radar-like summary (text) and an improvement plan.
+        </p>
+
+        <label for="m-model">Framework preset</label>
+        <select id="m-model">
+          <option value="basic" selected>Basic (6 domains)</option>
+          <option value="nist">NIST CSF-lite (Identify/Protect/Detect/Respond/Recover)</option>
+        </select>
+
+        <div class="row">
+          <div>
+            <label for="m-scale">Scale definition</label>
+            <select id="m-scale">
+              <option value="0-4" selected>0–4 (None → Optimized)</option>
+              <option value="1-5">1–5 (Initial → Optimized)</option>
+            </select>
+          </div>
+          <div>
+            <label for="m-target">Target maturity</label>
+            <select id="m-target">
+              <option value="2">2 (Defined)</option>
+              <option value="3" selected>3 (Managed)</option>
+              <option value="4">4 (Optimized)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="m-controls"></div>
+
+        <div class="actions">
+          <button class="primary" id="m-run">Compute</button>
+          <button id="m-demo">Load demo</button>
+          <button id="m-export">Export JSON</button>
+          <button class="danger" id="m-clear">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Posture Output</h2>
+        <div class="status">
+          <span class="pill"><b>Last run</b> <span id="m-last">—</span></span>
+          <span class="pill"><b>Preset</b> <span id="m-preset">—</span></span>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><p class="v" id="m-score">0</p><p class="k">Overall maturity</p></div>
+          <div class="kpi"><p class="v" id="m-gaps">0</p><p class="k">Domains below target</p></div>
+          <div class="kpi"><p class="v" id="m-topgap">—</p><p class="k">Top gap</p></div>
+        </div>
+
+        <ul class="list" id="m-list"></ul>
+        <div class="item" style="margin-top:10px">
+          <div class="small"><b>Improvement plan (copy/paste)</b></div>
+          <textarea id="m-plan" class="mono" style="min-height:160px" readonly></textarea>
+        </div>
+        <div id="m-err" class="small"></div>
+      </div>
+    </section>
+
+    <!-- REPORT -->
+    <section class="grid hidden" role="tabpanel" id="panel-report" aria-labelledby="tab-report">
+      <div class="card">
+        <h2>Executive Summary Generator</h2>
+        <p class="hint" style="margin-top:0">
+          Provide inputs (top risks, current incidents, KPIs). The tool produces a concise, business-ready summary with recommended next actions.
+          Use as a weekly/monthly security update.
+        </p>
+
+        <div class="row">
+          <div>
+            <label for="e-period">Reporting period</label>
+            <input id="e-period" placeholder="e.g., 01–31 Dec 2025" />
+          </div>
+          <div>
+            <label for="e-audience">Audience</label>
+            <select id="e-audience">
+              <option value="exec" selected>Executive / Steering Committee</option>
+              <option value="it">IT leadership</option>
+              <option value="security">Security leadership</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="e-kpis">KPIs (one per line)</label>
+        <textarea id="e-kpis" class="mono" placeholder="Examples:\n- Open critical vulns: 6 (↓2)\n- Mean time to remediate (high): 18 days (↓3)\n- Phishing report rate: 3.1% (↑0.4)\n- Incident count: 1 (no customer impact)"></textarea>
+
+        <label for="e-risks">Top risks (one per line)</label>
+        <textarea id="e-risks" class="mono" placeholder="Examples:\n- Internet-facing legacy service lacks MFA\n- Patch latency on public web tier\n- Limited endpoint coverage on contractor laptops"></textarea>
+
+        <label for="e-actions">Key actions / decisions needed</label>
+        <textarea id="e-actions" class="mono" placeholder="Examples:\n- Approve budget for EDR expansion\n- Mandate MFA on all admin paths\n- Prioritize decommission of legacy service"></textarea>
+
+        <div class="row">
+          <div>
+            <label for="e-tone">Tone</label>
+            <select id="e-tone">
+              <option value="neutral" selected>Neutral</option>
+              <option value="urgent">Urgent (risk-forward)</option>
+              <option value="optimistic">Optimistic (progress-forward)</option>
+            </select>
+          </div>
+          <div>
+            <label for="e-length">Length</label>
+            <select id="e-length">
+              <option value="short" selected>Short (5–8 bullets)</option>
+              <option value="medium">Medium (bullets + short narrative)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="e-run">Generate</button>
+          <button id="e-demo">Load demo</button>
+          <button id="e-copy">Copy to clipboard</button>
+          <button class="danger" id="e-clear">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Executive Output</h2>
+        <div class="status">
+          <span class="pill"><b>Last run</b> <span id="e-last">—</span></span>
+          <span class="pill"><b>Format</b> <span class="mono">Bullets + Actions</span></span>
+        </div>
+        <div class="item" style="margin-top:10px">
+          <textarea id="e-out" class="mono" style="min-height:520px" readonly></textarea>
+        </div>
+        <div id="e-err" class="small"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="pill" style="margin-bottom:10px"><b>Safety</b> These tools support governance decisions; they do not perform exploitation or scanning.</div>
+    <div>
+      Tip: Align thresholds (SLA, severity boundaries, target maturity) with your organization’s risk appetite and regulatory context.
+    </div>
+  </footer>
+
+  <script>
+    // ------------------------------
+    // Tabs & shared utilities
+    // ------------------------------
+    const $ = (id) => document.getElementById(id);
+    const nowStr = () => new Date().toLocaleString();
+
+    function setTab(active){
+      const tabs = ["risk","vuln","maturity","report"];
+      for(const t of tabs){
+        $("tab-"+t).setAttribute("aria-selected", String(t===active));
+        $("panel-"+t).classList.toggle("hidden", t!==active);
+      }
+    }
+    ["risk","vuln","maturity","report"].forEach(t => $("tab-"+t).addEventListener("click", ()=>setTab(t)));
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    }
+    function badgeClass(sev){
+      const s = String(sev||"").toUpperCase();
+      if(s === "CRITICAL" || s === "HIGH") return "bad";
+      if(s === "MEDIUM") return "warn";
+      return "good";
+    }
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    // ------------------------------
+    // 1) Risk Scoring
+    // ------------------------------
+    function riskSeverity(score){
+      if(score >= 80) return "CRITICAL";
+      if(score >= 60) return "HIGH";
+      if(score >= 35) return "MEDIUM";
+      return "LOW";
+    }
+
+    function riskSla(sev){
+      if(sev === "CRITICAL") return "24–72 hours";
+      if(sev === "HIGH") return "7–14 days";
+      if(sev === "MEDIUM") return "30–60 days";
+      return "90+ days / backlog";
+    }
+
+    function riskRecommendation(score, sev){
+      if(sev === "CRITICAL") return "Prioritize immediate remediation or compensating controls (access restriction, segmentation, temporary disablement). Escalate to incident-response readiness if exploit likely.";
+      if(sev === "HIGH") return "Schedule remediation within a defined sprint, apply compensating controls, and ensure detection/monitoring coverage.";
+      if(sev === "MEDIUM") return "Plan remediation with normal change control. Consider acceptance only with documented rationale and monitoring.";
+      return "Track in backlog; remediate during routine maintenance or as part of hardening initiatives.";
+    }
+
+    function calcRisk(){
+      const asset = Number($("r-asset").value);
+      const exposure = Number($("r-exposure").value);
+      const L = clamp(Number($("r-likelihood").value)||3, 1, 5);
+      const I = clamp(Number($("r-impact").value)||3, 1, 5);
+      const exploit = Number($("r-exploit").value);
+      const detect = Number($("r-detect").value);
+
+      // Base L×I mapped to 0..100 (max 25).
+      const base = (L * I) / 25 * 100;
+
+      // Context multiplier: asset + exposure modestly increase.
+      const ctxMult = 1 + ((asset-1) * 0.10) + ((exposure-1) * 0.12);
+
+      // Modifiers (additive): exploit availability and detectability.
+      const mod = (exploit * 5) + ((detect-1) * 4);
+
+      const score = clamp(Math.round(base * ctxMult + mod), 0, 100);
+      const sev = riskSeverity(score);
+
+      const why = [
+        `Likelihood=${L}/5, Impact=${I}/5 (base ${(Math.round(base))})`,
+        `Asset criticality factor=${asset}, Exposure factor=${exposure} (mult ${(ctxMult).toFixed(2)})`,
+        `Exploit availability=${exploit} (adds ${exploit*5}), Detectability=${detect} (adds ${(detect-1)*4})`
+      ].join(". ");
+
+      const rec = riskRecommendation(score, sev);
+      const sla = riskSla(sev);
+      const notes = $("r-notes").value.trim();
+
+      const summary = [
+        `Risk score: ${score}/100 (${sev}). Suggested SLA: ${sla}.`,
+        `Rationale: ${why}.`,
+        notes ? `Notes: ${notes}` : ""
+      ].filter(Boolean).join("\n");
+
+      return { score, sev, sla, rec, why, summary };
+    }
+
+    function renderRisk(out){
+      $("r-last").textContent = nowStr();
+      $("r-score").textContent = String(out.score);
+      $("r-sev").textContent = out.sev;
+      $("r-sla").textContent = out.sla;
+      $("r-bar").style.width = `${out.score}%`;
+      $("r-rec").textContent = out.rec;
+      $("r-why").textContent = out.why;
+      $("r-summary").value = out.summary;
+      $("r-badge").textContent = out.sev;
+      $("r-badge").className = `badge ${badgeClass(out.sev)}`;
+    }
+
+    $("r-calc").addEventListener("click", ()=>{
+      renderRisk(calcRisk());
+    });
+
+    $("r-demo").addEventListener("click", ()=>{
+      $("r-asset").value = "4";
+      $("r-exposure").value = "3";
+      $("r-likelihood").value = "4";
+      $("r-impact").value = "5";
+      $("r-exploit").value = "3";
+      $("r-detect").value = "3";
+      $("r-notes").value = "Internet-facing payments API with privileged access path; exploit circulating in the wild per vendor advisory.";
+      renderRisk(calcRisk());
+    });
+
+    $("r-clear").addEventListener("click", ()=>{
+      $("r-asset").value = "2";
+      $("r-exposure").value = "2";
+      $("r-likelihood").value = "3";
+      $("r-impact").value = "3";
+      $("r-exploit").value = "1";
+      $("r-detect").value = "2";
+      $("r-notes").value = "";
+      $("r-last").textContent = "—";
+      $("r-score").textContent = "0";
+      $("r-sev").textContent = "—";
+      $("r-sla").textContent = "—";
+      $("r-bar").style.width = "0%";
+      $("r-rec").textContent = "—";
+      $("r-why").textContent = "";
+      $("r-summary").value = "";
+      $("r-badge").textContent = "—";
+      $("r-badge").className = "badge";
+    });
+
+    // ------------------------------
+    // 2) Vulnerability Prioritization
+    // ------------------------------
+    function parseCsvLike(raw){
+      const lines = raw.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      if(!lines.length) return [];
+
+      // If first line includes known columns, treat as header.
+      const header = lines[0].toLowerCase().split(",").map(s=>s.trim());
+      const hasHeader = header.includes("id") && header.includes("title");
+
+      const cols = hasHeader ? header : ["id","title","asset","exposure","cvss","exploit","age_days","owner"];
+      const start = hasHeader ? 1 : 0;
+
+      const out = [];
+      for(const line of lines.slice(start)){
+        const parts = splitCsvLine(line);
+        const obj = {};
+        for(let i=0;i<cols.length;i++) obj[cols[i]] = (parts[i] ?? "").trim();
+        out.push(obj);
+      }
+      return out;
+    }
+
+    function splitCsvLine(line){
+      // Simple CSV splitting with quotes.
+      const res = [];
+      let cur = "";
+      let q = false;
+      for(let i=0;i<line.length;i++){
+        const c = line[i];
+        if(c === '"'){
+          if(q && line[i+1] === '"'){ cur += '"'; i++; }
+          else q = !q;
+          continue;
+        }
+        if(c === "," && !q){ res.push(cur); cur = ""; continue; }
+        cur += c;
+      }
+      res.push(cur);
+      return res;
+    }
+
+    function normExposure(x){
+      const s = (x||"").toLowerCase();
+      if(s.includes("internet") || s.includes("public")) return 3;
+      if(s.includes("internal") || s.includes("corp") || s.includes("intranet")) return 2;
+      return 1;
+    }
+
+    function normExploit(x){
+      const s = (x||"").toLowerCase();
+      if(s.includes("weapon") || s.includes("active") || s.includes("in the wild")) return 3;
+      if(s.includes("poc") || s.includes("proof")) return 2;
+      if(s.includes("none") || s.includes("unlikely")) return 1;
+      return 0;
+    }
+
+    function assetCriticalityFromName(asset){
+      const s = (asset||"").toLowerCase();
+      if(/payment|auth|identity|prod|customer|core|gateway|bank|pii|billing|checkout/.test(s)) return 4;
+      if(/api|portal|crm|internal|admin/.test(s)) return 3;
+      if(/dev|test|staging|sandbox/.test(s)) return 1;
+      return 2;
+    }
+
+    function planForSeverity(sev){
+      if(sev === "CRITICAL") return "Immediate fix or compensating control; validate exposure; notify stakeholders";
+      if(sev === "HIGH") return "Schedule within sprint; apply mitigations; verify patching and monitoring";
+      if(sev === "MEDIUM") return "Plan remediation; consider hardening/headers/config";
+      return "Backlog; remediate during routine maintenance";
+    }
+
+    function vulnSeverity(score){
+      if(score >= 80) return "CRITICAL";
+      if(score >= 60) return "HIGH";
+      if(score >= 35) return "MEDIUM";
+      return "LOW";
+    }
+
+    function scoreFinding(f, wCvss, wCtx){
+      const cvss = clamp(Number(f.cvss)||0, 0, 10);
+      const cvssScaled = (cvss/10)*100;
+
+      const exposure = normExposure(f.exposure);
+      const exploit = normExploit(f.exploit);
+      const assetCrit = assetCriticalityFromName(f.asset);
+      const age = clamp(Number(f.age_days)||0, 0, 3650);
+
+      // Context score: asset + exposure + exploit + age.
+      // Age gives small bump (stale findings accumulate risk).
+      const ctx = clamp(
+        (assetCrit-1)*14 + (exposure-1)*16 + exploit*10 + Math.min(12, Math.round(age/30)*2),
+        0, 100
+      );
+
+      const score = clamp(Math.round(cvssScaled*wCvss + ctx*wCtx), 0, 100);
+      const sev = vulnSeverity(score);
+
+      return { score, sev, cvssScaled: Math.round(cvssScaled), ctx };
+    }
+
+    let vulnCache = [];
+
+    function renderVulns(rows){
+      $("v-last").textContent = nowStr();
+      $("v-count").textContent = String(rows.length);
+
+      const critical = rows.filter(r=>r.sev==="CRITICAL").length;
+      const high = rows.filter(r=>r.sev==="HIGH").length;
+      const backlog = rows.filter(r=>r.sev==="LOW" || r.sev==="MEDIUM").length;
+      $("v-kpi-critical").textContent = String(critical);
+      $("v-kpi-high").textContent = String(high);
+      $("v-kpi-backlog").textContent = String(backlog);
+
+      const body = $("v-body");
+      body.innerHTML = "";
+
+      const topN = Math.max(5, Number($("v-topn").value)||25);
+      const show = rows.slice(0, topN);
+      show.forEach((r, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono">${idx+1}</td>
+          <td class="mono">${escapeHtml(r.id)}</td>
+          <td><span class="badge ${badgeClass(r.sev)}">${escapeHtml(r.sev)}</span></td>
+          <td class="mono">${r.score}</td>
+          <td>${escapeHtml(r.asset)}</td>
+          <td class="mono">${escapeHtml(r.exposure)}</td>
+          <td class="mono">${escapeHtml(r.cvss)}</td>
+          <td class="mono">${escapeHtml(r.exploit)}</td>
+          <td class="mono">${escapeHtml(r.age_days)}</td>
+          <td>${escapeHtml(r.owner)}</td>
+          <td class="small">${escapeHtml(r.plan)}</td>
+        `;
+        body.appendChild(tr);
+      });
+
+      if(rows.length > topN){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="11" class="small">Showing top ${topN} of ${rows.length}. Export CSV for the full ranked list.</td>`;
+        body.appendChild(tr);
+      }
+    }
+
+    function exportCsv(rows, filename){
+      const header = ["rank","id","title","asset","exposure","cvss","exploit","age_days","owner","score","severity","plan"];
+      const lines = [header.join(",")];
+      for(let i=0;i<rows.length;i++){
+        const r = rows[i];
+        const vals = [
+          i+1, r.id, r.title, r.asset, r.exposure, r.cvss, r.exploit, r.age_days, r.owner, r.score, r.sev, r.plan
+        ].map(v => `"${String(v??"").replaceAll('"','""') }"`);
+        lines.push(vals.join(","));
+      }
+      const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    $("v-run").addEventListener("click", ()=>{
+      $("v-err").textContent = "";
+      try{
+        const raw = $("v-input").value;
+        const ownerDefault = $("v-default-owner").value.trim() || "Unassigned";
+        const wCvss = clamp(Number($("v-w-cvss").value)||0.55, 0, 1);
+        const wCtx = clamp(Number($("v-w-context").value)||0.45, 0, 1);
+
+        // If weights do not sum to 1, normalize.
+        const sum = (wCvss + wCtx) || 1;
+        const wc = wCvss/sum, wx = wCtx/sum;
+
+        const findings = parseCsvLike(raw).map(f => ({
+          id: f.id || "(no-id)",
+          title: f.title || "",
+          asset: f.asset || "(unknown)",
+          exposure: f.exposure || "internal",
+          cvss: f.cvss || "",
+          exploit: f.exploit || "unknown",
+          age_days: f.age_days || "0",
+          owner: (f.owner || "").trim() || ownerDefault
+        }));
+
+        const scored = findings.map(f => {
+          const s = scoreFinding(f, wc, wx);
+          const plan = planForSeverity(s.sev);
+          return { ...f, score: s.score, sev: s.sev, plan };
+        });
+
+        scored.sort((a,b)=> b.score - a.score);
+        vulnCache = scored;
+        renderVulns(scored);
+      } catch(e){
+        $("v-err").textContent = `Error: ${e.message}`;
+      }
+    });
+
+    $("v-demo").addEventListener("click", ()=>{
+      $("v-input").value = [
+        "id,title,asset,exposure,cvss,exploit,age_days,owner",
+        "CVE-2024-XXXX,OpenSSL vuln,Payments API,internet,9.8,weaponized,3,Platform",
+        "CVE-2025-YYYY,Auth bypass,Customer Portal,internet,8.6,poc,14,AppTeam",
+        "INT-12,Missing HSTS,Marketing site,internet,4.3,poc,60,WebTeam",
+        "APP-77,Outdated library,Internal portal,internal,7.5,poc,30,AppTeam",
+        "CFG-19,Public S3 bucket,Data pipeline,internet,0.0,active,1,CloudOps",
+        "OPS-05,Weak SSH config,Bastion host,internet,6.8,unknown,120,Platform"
+      ].join("\n");
+      $("v-default-owner").value = "Unassigned";
+      $("v-topn").value = "25";
+      $("v-w-cvss").value = "0.55";
+      $("v-w-context").value = "0.45";
+      $("v-run").click();
+    });
+
+    $("v-export").addEventListener("click", ()=>{
+      if(!vulnCache.length){
+        $("v-err").textContent = "Nothing to export. Run prioritization first.";
+        return;
+      }
+      exportCsv(vulnCache, "prioritized_findings.csv");
+    });
+
+    $("v-clear").addEventListener("click", ()=>{
+      $("v-input").value = "";
+      $("v-err").textContent = "";
+      $("v-last").textContent = "—";
+      $("v-count").textContent = "0";
+      $("v-kpi-critical").textContent = "0";
+      $("v-kpi-high").textContent = "0";
+      $("v-kpi-backlog").textContent = "0";
+      $("v-body").innerHTML = "";
+      vulnCache = [];
+    });
+
+    // ------------------------------
+    // 3) Maturity Tracker
+    // ------------------------------
+    const maturityPresets = {
+      basic: [
+        { key:"governance", name:"Governance & Policy", controls:["Security policy", "Risk register", "Third-party management"] },
+        { key:"identity", name:"Identity & Access", controls:["MFA coverage", "Privileged access", "Joiner/mover/leaver"] },
+        { key:"endpoint", name:"Endpoint & Hardening", controls:["EDR coverage", "Patch management", "Secure baselines"] },
+        { key:"logging", name:"Logging & Detection", controls:["Central logging", "Alert triage", "Use-case coverage"] },
+        { key:"vuln", name:"Vulnerability Management", controls:["Scanning cadence", "Remediation SLAs", "Exception process"] },
+        { key:"ir", name:"Incident Response", controls:["Playbooks", "Tabletop exercises", "Post-incident reviews"] }
+      ],
+      nist: [
+        { key:"identify", name:"Identify", controls:["Asset inventory", "Business environment", "Risk assessment"] },
+        { key:"protect", name:"Protect", controls:["Access control", "Training", "Data security"] },
+        { key:"detect", name:"Detect", controls:["Anomalies/events", "Continuous monitoring", "Detection processes"] },
+        { key:"respond", name:"Respond", controls:["Response planning", "Communications", "Improvements"] },
+        { key:"recover", name:"Recover", controls:["Recovery planning", "Improvements", "Communications"] }
+      ]
+    };
+
+    function buildMaturityInputs(){
+      const preset = $("m-model").value;
+      const scale = $("m-scale").value;
+      const items = maturityPresets[preset];
+
+      const wrap = $("m-controls");
+      wrap.innerHTML = "";
+
+      items.forEach((d, di) => {
+        const block = document.createElement("div");
+        block.className = "item";
+        block.innerHTML = `<div><b>${escapeHtml(d.name)}</b><div class="small">Rate each control.</div></div>`;
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+          <thead><tr><th>Control</th><th style="width:140px">Score</th><th>Notes</th></tr></thead>
+          <tbody></tbody>
+        `;
+        const tb = table.querySelector("tbody");
+
+        d.controls.forEach((c, ci) => {
+          const tr = document.createElement("tr");
+          const id = `m-${d.key}-${ci}`;
+          const noteId = `${id}-n`;
+
+          const select = document.createElement("select");
+          select.id = id;
+          const [min, max] = scale === "0-4" ? [0,4] : [1,5];
+          for(let s=min;s<=max;s++){
+            const o = document.createElement("option");
+            o.value = String(s);
+            o.textContent = String(s);
+            if(s === (scale === "0-4" ? 2 : 3)) o.selected = true;
+            select.appendChild(o);
+          }
+
+          const note = document.createElement("input");
+          note.id = noteId;
+          note.placeholder = "Optional";
+
+          const td1 = document.createElement("td"); td1.textContent = c;
+          const td2 = document.createElement("td"); td2.appendChild(select);
+          const td3 = document.createElement("td"); td3.appendChild(note);
+
+          tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+          tb.appendChild(tr);
+        });
+
+        block.appendChild(table);
+        wrap.appendChild(block);
+      });
+
+      $("m-preset").textContent = preset;
+    }
+
+    function computeMaturity(){
+      const preset = $("m-model").value;
+      const scale = $("m-scale").value;
+      const target = Number($("m-target").value);
+      const items = maturityPresets[preset];
+      const [min, max] = scale === "0-4" ? [0,4] : [1,5];
+
+      const domainScores = [];
+      const planLines = [];
+
+      for(const d of items){
+        let sum = 0;
+        const n = d.controls.length;
+        const notes = [];
+        for(let i=0;i<n;i++){
+          const s = Number($("m-"+d.key+"-"+i).value);
+          const note = $("m-"+d.key+"-"+i+"-n").value.trim();
+          sum += s;
+          if(note) notes.push(`- ${d.controls[i]}: ${note}`);
+        }
+        const avg = sum / n;
+        // Normalize to 0..4 scale for reporting.
+        const norm = scale === "0-4" ? avg : ((avg - 1) / 4) * 4;
+        domainScores.push({ key:d.key, name:d.name, avgRaw:avg, score: Number(norm.toFixed(2)), below: (scale==="0-4"?avg:avg-1) < (scale==="0-4"?target:target) , notes });
+
+        if((scale==="0-4"?avg:avg) < target){
+          planLines.push(`${d.name}: prioritize uplift from ${(avg).toFixed(1)} to ${target}. Focus on: ${d.controls.slice(0,2).join(", ")}…`);
+        }
+      }
+
+      const overall = domainScores.reduce((a,b)=>a+b.score,0) / Math.max(1, domainScores.length);
+      const below = domainScores.filter(d=>d.score < (scale==="0-4"?target: (target-1)/4*4)).length;
+      const topGap = [...domainScores].sort((a,b)=>a.score-b.score)[0];
+
+      // Improvement plan with top 3 gaps.
+      const gaps = [...domainScores].sort((a,b)=>a.score-b.score).slice(0,3);
+      const plan = [
+        `Target maturity: ${target} (${scale}).`,
+        `Top gaps:`
+      ].concat(gaps.map((g,i)=>`${i+1}. ${g.name} (score ${g.score}/4)`))
+       .concat(["", "Recommended 90-day focus:"])
+       .concat(gaps.map(g=>`- ${g.name}: define milestones, assign owner, and measure progress monthly.`))
+       .join("\n");
+
+      return { preset, scale, target, overall: Number(overall.toFixed(2)), below, topGap: topGap?.name || "—", domainScores, plan };
+    }
+
+    function renderMaturity(out){
+      $("m-last").textContent = nowStr();
+      $("m-score").textContent = String(out.overall);
+      $("m-gaps").textContent = String(out.below);
+      $("m-topgap").textContent = out.topGap;
+      $("m-plan").value = out.plan;
+
+      const list = $("m-list");
+      list.innerHTML = "";
+
+      out.domainScores.sort((a,b)=>a.score-b.score);
+      for(const d of out.domainScores){
+        const sev = d.score < 2.0 ? "HIGH" : (d.score < 3.0 ? "MEDIUM" : "LOW");
+        const li = document.createElement("li");
+        li.className = "item";
+        li.innerHTML = `
+          <div class="top">
+            <div>
+              <div><b>${escapeHtml(d.name)}</b></div>
+              <div class="small" style="margin-top:6px">Score: <span class="mono">${d.score}/4</span> (avg ${d.avgRaw.toFixed(1)} on ${escapeHtml(out.scale)})</div>
+              <div style="margin-top:8px" class="bar"><div style="width:${clamp((d.score/4)*100,0,100)}%"></div></div>
+              ${d.notes?.length ? `<details style="margin-top:8px"><summary class="small">Notes</summary><div class="small" style="margin-top:6px; white-space:pre-wrap">${escapeHtml(d.notes.join("\n"))}</div></details>` : ""}
+            </div>
+            <span class="badge ${badgeClass(sev)}">${escapeHtml(sev)}</span>
+          </div>
+        `;
+        list.appendChild(li);
+      }
+    }
+
+    $("m-model").addEventListener("change", buildMaturityInputs);
+    $("m-scale").addEventListener("change", buildMaturityInputs);
+
+    $("m-run").addEventListener("click", ()=>{
+      $("m-err").textContent = "";
+      try{
+        renderMaturity(computeMaturity());
+      } catch(e){
+        $("m-err").textContent = `Error: ${e.message}`;
+      }
+    });
+
+    $("m-demo").addEventListener("click", ()=>{
+      // Apply a plausible uneven posture.
+      buildMaturityInputs();
+      const preset = $("m-model").value;
+      const items = maturityPresets[preset];
+      // Lower a couple domains.
+      if(items[3]){ // logging/detect
+        for(let i=0;i<items[3].controls.length;i++){
+          const el = $("m-"+items[3].key+"-"+i);
+          if(el) el.value = "1";
+        }
+      }
+      if(items[4]){ // vuln
+        for(let i=0;i<items[4].controls.length;i++){
+          const el = $("m-"+items[4].key+"-"+i);
+          if(el) el.value = "2";
+        }
+      }
+      // Stronger identity.
+      if(items[1]){
+        for(let i=0;i<items[1].controls.length;i++){
+          const el = $("m-"+items[1].key+"-"+i);
+          if(el) el.value = "3";
+        }
+      }
+      $("m-run").click();
+    });
+
+    $("m-export").addEventListener("click", ()=>{
+      try{
+        const out = computeMaturity();
+        const blob = new Blob([JSON.stringify(out, null, 2)], {type:"application/json;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "maturity_posture.json";
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      } catch(e){
+        $("m-err").textContent = `Error: ${e.message}`;
+      }
+    });
+
+    $("m-clear").addEventListener("click", ()=>{
+      buildMaturityInputs();
+      $("m-last").textContent = "—";
+      $("m-score").textContent = "0";
+      $("m-gaps").textContent = "0";
+      $("m-topgap").textContent = "—";
+      $("m-plan").value = "";
+      $("m-list").innerHTML = "";
+      $("m-err").textContent = "";
+    });
+
+    // ------------------------------
+    // 4) Executive Summary Generator
+    // ------------------------------
+    function bulletize(raw){
+      return raw.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=> l.startsWith("-") ? l.slice(1).trim() : l);
+    }
+
+    function generateExecutive(){
+      const period = $("e-period").value.trim() || "(period not specified)";
+      const audience = $("e-audience").value;
+      const tone = $("e-tone").value;
+      const length = $("e-length").value;
+
+      const kpis = bulletize($("e-kpis").value);
+      const risks = bulletize($("e-risks").value);
+      const actions = bulletize($("e-actions").value);
+
+      const audienceLine = audience === "exec" ? "Executive Summary" : (audience === "it" ? "IT Leadership Update" : "Security Leadership Update");
+
+      const toneLine = tone === "urgent"
+        ? "Overall posture remains risk-forward; timely decisions are required to reduce exposure."
+        : tone === "optimistic"
+          ? "Overall posture shows measurable progress, with targeted investment required to sustain improvement."
+          : "Overall posture is stable; focus remains on closing highest-risk gaps.";
+
+      const header = `${audienceLine} — ${period}`;
+
+      const sections = [];
+      if(length === "medium"){
+        sections.push(toneLine);
+        sections.push("");
+      }
+
+      const fmtBullets = (title, items, min=1) => {
+        const out = [];
+        out.push(title);
+        if(items.length < min) out.push("- (none provided)");
+        else items.slice(0, length==="short"?6:10).forEach(x => out.push(`- ${x}`));
+        return out;
+      };
+
+      sections.push(...fmtBullets("Key metrics", kpis));
+      sections.push("");
+      sections.push(...fmtBullets("Top risks", risks));
+      sections.push("");
+      sections.push(...fmtBullets("Actions / decisions requested", actions));
+
+      // Closing line tailored to audience.
+      const close = audience === "exec"
+        ? "Next checkpoint: validate remediation progress on top risks and confirm resourcing for agreed actions."
+        : audience === "it"
+          ? "Next checkpoint: confirm delivery timelines, owners, and operational constraints for remediation workstreams."
+          : "Next checkpoint: refine detection coverage and update risk register with current status and exceptions.";
+
+      sections.push("");
+      sections.push(close);
+
+      return `${header}\n\n${sections.join("\n")}`;
+    }
+
+    $("e-run").addEventListener("click", ()=>{
+      $("e-err").textContent = "";
+      try{
+        $("e-last").textContent = nowStr();
+        $("e-out").value = generateExecutive();
+      } catch(e){
+        $("e-err").textContent = `Error: ${e.message}`;
+      }
+    });
+
+    $("e-demo").addEventListener("click", ()=>{
+      $("e-period").value = "01–15 Dec 2025";
+      $("e-audience").value = "exec";
+      $("e-tone").value = "neutral";
+      $("e-length").value = "short";
+
+      $("e-kpis").value = [
+        "- Open critical findings: 4 (↓1)",
+        "- Open high findings: 18 (↑2)",
+        "- MTTR (high): 21 days (↑3)",
+        "- Incident count: 1 (no customer impact)",
+        "- Phishing report rate: 3.0% (↑0.2)"
+      ].join("\n");
+
+      $("e-risks").value = [
+        "- Internet-facing legacy admin path lacks MFA",
+        "- Patch latency on public web tier exceeds target for High findings",
+        "- Centralized logging coverage gaps for two critical systems"
+      ].join("\n");
+
+      $("e-actions").value = [
+        "- Approve enforced MFA rollout for all admin paths (policy exception removal)",
+        "- Prioritize patching sprint for public web tier (High backlog)",
+        "- Fund/approve log pipeline expansion for critical systems (Detect)"
+      ].join("\n");
+
+      $("e-run").click();
+    });
+
+    $("e-copy").addEventListener("click", async ()=>{
+      $("e-err").textContent = "";
+      try{
+        await navigator.clipboard.writeText($("e-out").value || "");
+        $("e-err").textContent = "Copied.";
+      } catch(e){
+        $("e-err").textContent = "Copy failed (clipboard permissions).";
+      }
+    });
+
+    $("e-clear").addEventListener("click", ()=>{
+      $("e-period").value = "";
+      $("e-audience").value = "exec";
+      $("e-kpis").value = "";
+      $("e-risks").value = "";
+      $("e-actions").value = "";
+      $("e-tone").value = "neutral";
+      $("e-length").value = "short";
+      $("e-last").textContent = "—";
+      $("e-out").value = "";
+      $("e-err").textContent = "";
+    });
+
+    // ------------------------------
+    // Init
+    // ------------------------------
+    buildMaturityInputs();
+  </script>
+</body>
+</html>
