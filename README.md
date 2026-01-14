@@ -8,7 +8,7 @@ Live URL:  https://aminbiography.github.io/CTI-Reporting-And-Decision-Support-AP
 
 **Reporting and Decision-Support APP** is a browser-only toolkit for turning security data into **consistent decisions and executive-ready reporting**. All calculations run locally in your browser; you paste inputs and receive scored outputs, ranked lists, and copy/paste summaries.
 
-### What it contains
+### What it contains 
 
 The app has four tools (tabs), each designed for a specific governance workflow:
 
